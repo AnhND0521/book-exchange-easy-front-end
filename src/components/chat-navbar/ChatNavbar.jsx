@@ -16,34 +16,13 @@ import { useNavigate } from "react-router";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 
-const ChatMenuItems = [
-  {
-    name: "username1",
-    last_message: "message is displayed here",
-    you_sent: false,
-    read: false,
-  },
-  {
-    name: "username2",
-    last_message: "message is displayed here",
-    you_sent: true,
-    read: true,
-  },
-  {
-    name: "username3",
-    last_message: "message is displayed here",
-    you_sent: false,
-    read: true,
-  },
-];
-
 export default function ChatNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuHandler = (val) => {
     setIsMenuOpen(val);
     fetchData();
   } 
-  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [partnerId, setPartnerId] = useState();
 
   const closeMenu = () => setIsMenuOpen(false);
