@@ -19,39 +19,38 @@ import Dashboard from "./pages/Dashboard";
 import Books from "./pages/Books";
 import Users from "./pages/Users";
 import Transactions from "./pages/Transactions";
+import ResetPassword from "./pages/LoginSignup/ResetPassword";
 
 function App() {
-
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>  
-            <Route path = "/welcome" element = {<WelcomePage/>}/>
-            <Route path="/signup" element={<Signup />} />
-            <Route path = "/login" element= {<Login/>}/>
-            <Route path = "/forgotpassword" element= {<Forgot/>}/>
-            <Route index element={<Home />} />
-            <Route path="home" element={<Home />} />
-            <Route path="explore" element={<Explore />} />
-            <Route path="events" element={<Events />} />
-            <Route path="/events/:id" element={<EventDetails />} />
-            <Route path="interest" element={<InterestBooks />} />
-            <Route path="mybook" element={<MyBooks />} />
-            <Route path="book/:id" element={<BookDetail />} />
-            <Route path="/setting" element={<SettingPage />} />
-            <Route path="/transactions" element={<TransactionHistory />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/books-admin" element={<Books />} />
-            <Route path="/users-admin" element={<Users />} />
-            <Route path="/transactions-admin" element={<Transactions />} />
-            <Route path="*" element={<Notfound />} />
-            <Route path = "/profile" element = {<UserProfile/>}/>
+        <Routes>
+          <Route index element={<Home />} />
+          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<Forgot />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="home" element={<Home />} />
+          <Route path="explore" element={<Explore />} />
+          <Route path="events" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetails />} />
+          <Route path="interest" element={<InterestBooks />} />
+          <Route path="mybook" element={<MyBooks />} />
+          <Route path="book/:id" element={<BookDetail />} />
+          <Route path="/setting" element={<SettingPage />} />
+          <Route path="/transactions" element={<TransactionHistory />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/books-admin" element={<Books />} />
+          <Route path="/users-admin" element={<Users />} />
+          <Route path="/transactions-admin" element={<Transactions />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="*" element={<Notfound />} />
         </Routes>
       </BrowserRouter>
     </div>
   );
 }
-
-
 
 export default App;

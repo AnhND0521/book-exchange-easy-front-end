@@ -1,0 +1,1 @@
+export const RESOURCE_NOT_FOUND_ERROR = 1404;
