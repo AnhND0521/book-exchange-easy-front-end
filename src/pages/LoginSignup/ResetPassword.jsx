@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import environment from "../../environment";
-import { RESOURCE_NOT_FOUND_ERROR } from "../../constants";
 import { Button, Typography } from "@material-tailwind/react";
 
 const ResetPassword = () => {

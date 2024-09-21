@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Select, Option } from "@material-tailwind/react";
+import { Select, Option, Button } from "@material-tailwind/react";
 import {
   Input,
   Popover,
@@ -13,20 +13,31 @@ import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
 import "font-awesome/css/font-awesome.min.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const apiUrl = "http://localhost:8080/api/v1";
 
 export const Signup = () => {
-  const [birthDate, setBirthDate] = useState();
   const [provinceList, setProvinceList] = useState([]);
   const [districtList, setDistrictList] = useState([]);
   const [communeList, setCommuneList] = useState([]);
 
-  const [formData, setFormData] = useState({});
-  const [confirmPasswordMatches, setConfirmPasswordMatches] = useState(true);
-  const [success, setSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    birthDate: undefined,
+    phoneNumber: "",
+    roles: ["BOOK_EXCHANGER"],
+    gender: "MALE",
+  });
   const [error, setError] = useState("");
+  const [errorMap, setErrorMap] = useState({});
+  const [anyErrors, setAnyErrors] = useState(false);
+  const [anyRequiredFieldsEmpty, setAnyRequiredFieldsEmpty] = useState(true);
+  const [termsAgreed, setTermsAgreed] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const fetchProvinceList = async () => {
     const response = await fetch(`${apiUrl}/address/provinces`);
@@ -67,8 +78,82 @@ export const Signup = () => {
 
   const navigate = useNavigate();
 
+  const checkErrors = (formData, errorMap) => {
+    const keys = Object.keys(errorMap);
+    for (let i = 0; i < keys.length; i++) {
+      if (errorMap[keys[i]] !== "") {
+        setAnyErrors(true);
+        return;
+      }
+    }
+    setAnyErrors(false);
+
+    let requiredFields = ["name", "email", "password", "confirmPassword"];
+    for (let i = 0; i < requiredFields.length; i++) {
+      if (!formData[requiredFields[i]] || formData[requiredFields[i]] === "") {
+        setAnyRequiredFieldsEmpty(true);
+        return;
+      }
+    }
+    setAnyRequiredFieldsEmpty(false);
+  };
+
+  const updateData = (formData) => {
+    setFormData(formData);
+
+    let tmpErrorMap = { ...errorMap };
+    Object.keys(errorMap).forEach((key) => {
+      tmpErrorMap[key] = "";
+    });
+    console.log(formData);
+
+    if (formData.name.length > 0 && formData.name.trim().length === 0) {
+      tmpErrorMap.name = "Your name should not be empty.";
+    }
+
+    if (!formData.name.match(/^[A-Za-z0-9 ]*$/)) {
+      console.log("ABC");
+      tmpErrorMap.name =
+        "Your name should contain letters, digits or spaces only.";
+    }
+
+    if (formData.email.length > 0 && !formData.email.match(/^.+@.+$/)) {
+      tmpErrorMap.email = "Please input a valid email.";
+    }
+
+    if (formData.password.length > 0 && formData.password.length < 8) {
+      tmpErrorMap.password = "Your password should have at least 8 characters.";
+    }
+
+    if (
+      formData.confirmPassword.length > 0 &&
+      formData.confirmPassword !== formData.password
+    ) {
+      tmpErrorMap.confirmPassword =
+        "Confirm password does not match with password.";
+    }
+
+    if (formData.birthDate && formData.birthDate >= Date.now()) {
+      tmpErrorMap.birthDate = "Your birth date should be before current date.";
+    }
+
+    if (
+      formData.phoneNumber.length > 0 &&
+      !formData.phoneNumber.match(/[0-9]{8,12}/)
+    ) {
+      tmpErrorMap.phoneNumber = "Please input a valid phone number.";
+    }
+
+    console.log(tmpErrorMap);
+    setErrorMap(tmpErrorMap);
+    checkErrors(formData, tmpErrorMap);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
+    if (formData.birthDate)
+      formData.birthDate = formData.birthDate.toISOString().slice(0, 10);
     console.log(formData);
 
     setError("");
@@ -79,16 +164,22 @@ export const Signup = () => {
       body: JSON.stringify(formData),
     });
 
+    setLoading(false);
+
     const data = await response.json();
     console.log(data);
 
     if (!response.ok) {
+      if (response.status === 500) {
+        setError("There was some error.");
+        return;
+      }
       setError(data.message);
       return;
     }
 
+    console.log("Success");
     setSuccess(true);
-    navigate("/login", { state: { success: true } });
   };
 
   return (
@@ -97,13 +188,14 @@ export const Signup = () => {
         <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
           <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-              Create an account
+              {!success?"Create an account":"Account created successfully!"}
             </h1>
-            <form
-              class="space-y-4 md:space-y-3"
-              action="#"
-              onSubmit={handleSubmit}
-            >
+            {!success && (
+              <form
+                class="space-y-4 md:space-y-3"
+                action="#"
+                onSubmit={handleSubmit}
+              >
                 <div>
                   <Input
                     type="text"
@@ -111,10 +203,19 @@ export const Signup = () => {
                     label="Your Name"
                     value={formData.name}
                     onChange={(event) =>
-                      setFormData({ ...formData, name: event.target.value })
+                      updateData({ ...formData, name: event.target.value })
                     }
                     required
                   />
+                  {errorMap.name && (
+                    <Typography
+                      variant="small"
+                      color="red"
+                      className="mt-2 flex items-center gap-1 font-normal"
+                    >
+                      {errorMap.name}
+                    </Typography>
+                  )}
                 </div>
                 <div>
                   <Input
@@ -125,10 +226,20 @@ export const Signup = () => {
                     label="Email"
                     placeholder="name@company.com"
                     onChange={(event) =>
-                      setFormData({ ...formData, email: event.target.value })
+                      updateData({ ...formData, email: event.target.value })
                     }
                     required
+                    email
                   />
+                  {errorMap.email && (
+                    <Typography
+                      variant="small"
+                      color="red"
+                      className="mt-2 flex items-center gap-1 font-normal"
+                    >
+                      {errorMap.email}
+                    </Typography>
+                  )}
                 </div>
                 <div>
                   <Input
@@ -139,13 +250,22 @@ export const Signup = () => {
                     label="Password"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     onChange={(event) =>
-                      setFormData({
+                      updateData({
                         ...formData,
                         password: event.target.value,
                       })
                     }
                     required
                   />
+                  {errorMap.password && (
+                    <Typography
+                      variant="small"
+                      color="red"
+                      className="mt-2 flex items-center gap-1 font-normal"
+                    >
+                      {errorMap.password}
+                    </Typography>
+                  )}
                   {/* <Typography
                   variant="small"
                   color="gray"
@@ -175,20 +295,20 @@ export const Signup = () => {
                     label="Confirm Password"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     onChange={(event) =>
-                      setConfirmPasswordMatches(
-                        event.target.value === formData.password
-                      )
+                      updateData({
+                        ...formData,
+                        confirmPassword: event.target.value,
+                      })
                     }
                     required
-                    error={!confirmPasswordMatches}
                   />
-                  {!confirmPasswordMatches && (
+                  {errorMap.confirmPassword && (
                     <Typography
                       variant="small"
                       color="red"
                       className="mt-2 flex items-center gap-1 font-normal"
                     >
-                      Password and confirm password do not match!
+                      {errorMap.confirmPassword}
                     </Typography>
                   )}
                 </div>
@@ -196,12 +316,15 @@ export const Signup = () => {
                   <Select
                     className="border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     label="Select role *"
+                    value="BOOK_EXCHANGER"
                     onChange={(val) =>
                       setFormData({ ...formData, roles: [val] })
                     }
                     required
                   >
-                    <Option value="BOOK_EXCHANGER">Book exchanger</Option>
+                    <Option value="BOOK_EXCHANGER" selected={true}>
+                      Book exchanger
+                    </Option>
                     <Option value="BOOKSTORE">Bookstore</Option>
                   </Select>
                 </div>
@@ -209,12 +332,15 @@ export const Signup = () => {
                   <Select
                     className="border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     label="Select gender *"
+                    value="MALE"
                     onChange={(val) =>
                       setFormData({ ...formData, gender: val.toUpperCase() })
                     }
                     required
                   >
-                    <Option value="MALE">Male</Option>
+                    <Option value="MALE" selected>
+                      Male
+                    </Option>
                     <Option value="FEMALE">Female</Option>
                     <Option value="OTHER">Other</Option>
                   </Select>
@@ -226,19 +352,22 @@ export const Signup = () => {
                       <Input
                         label="Birth date"
                         onChange={() => null}
-                        value={birthDate ? format(birthDate, "PPP") : ""}
+                        value={
+                          formData.birthDate
+                            ? format(formData.birthDate, "PPP")
+                            : ""
+                        }
                         className="cursor-pointer"
                       />
                     </PopoverHandler>
                     <PopoverContent className="p-2 shadow-lg rounded-md">
                       <DayPicker
                         mode="single"
-                        selected={birthDate}
+                        selected={formData.birthDate}
                         onSelect={(date) => {
-                          setBirthDate(date);
-                          setFormData({
+                          updateData({
                             ...formData,
-                            birthDate: date.toISOString().slice(0, 10),
+                            birthDate: date,
                           });
                         }}
                         showOutsideDays
@@ -287,6 +416,15 @@ export const Signup = () => {
                       />
                     </PopoverContent>
                   </Popover>
+                  {errorMap.birthDate && (
+                    <Typography
+                      variant="small"
+                      color="red"
+                      className="mt-2 flex items-center gap-1 font-normal"
+                    >
+                      {errorMap.birthDate}
+                    </Typography>
+                  )}
                 </div>
 
                 <div>
@@ -298,12 +436,21 @@ export const Signup = () => {
                     label="Phone Number"
                     placeholder="xxx-xxx-xxxx"
                     onChange={(event) =>
-                      setFormData({
+                      updateData({
                         ...formData,
                         phoneNumber: event.target.value,
                       })
                     }
                   />
+                  {errorMap.phoneNumber && (
+                    <Typography
+                      variant="small"
+                      color="red"
+                      className="mt-2 flex items-center gap-1 font-normal"
+                    >
+                      {errorMap.phoneNumber}
+                    </Typography>
+                  )}
                 </div>
 
                 <div>
@@ -380,54 +527,76 @@ export const Signup = () => {
                   </div>
                 )}
 
-              <div class="flex items-start">
-                <div class="flex items-center h-5">
-                  <input
-                    id="terms"
-                    aria-describedby="terms"
-                    type="checkbox"
-                    class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                    required
-                  />
-                </div>
-                <div class="ml-3 text-sm">
-                  <label
-                    for="terms"
-                    class="font-light text-gray-500 dark:text-gray-300"
-                  >
-                    I accept the{" "}
-                    <a
-                      class="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                      href="#"
+                <div class="flex items-start">
+                  <div class="flex items-center h-5">
+                    <input
+                      id="terms"
+                      aria-describedby="terms"
+                      type="checkbox"
+                      class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
+                      required
+                      checked={termsAgreed}
+                      onChange={(event) => setTermsAgreed(event.target.checked)}
+                    />
+                  </div>
+                  <div class="ml-3 text-sm">
+                    <label
+                      for="terms"
+                      class="font-light text-gray-500 dark:text-gray-300"
                     >
-                      Terms and Conditions
-                    </a>
-                  </label>
+                      I accept the{" "}
+                      <a
+                        class="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                        href="#"
+                      >
+                        Terms and Conditions
+                      </a>
+                    </label>
+                  </div>
                 </div>
-              </div>
-              <button
-                type="submit"
-                class="w-full text-white bg-blue-500 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-              >
-                Create an account
-              </button>
-              <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  class="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                <Button
+                  type="submit"
+                  color="blue"
+                  className="w-full justify-center"
+                  disabled={anyErrors || anyRequiredFieldsEmpty || !termsAgreed || loading}
+                  loading={loading}
                 >
-                  Login now
-                </Link>
-              </p>
-            </form>
+                  Create account
+                </Button>
+                <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    class="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  >
+                    Login now
+                  </Link>
+                </p>
+              </form>
+            )}
+            {success && (
+              <div class="space-y-4 md:space-y-3">
+                <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  An email has been sent to your email address. Please follow
+                  the instructions to activate your account.
+                </p>
+                <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                  <Link
+                    to="/login"
+                    class="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  >
+                    Back to login
+                  </Link>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
       {error && (
         <Alert
           color="red"
-          className={`fixed top-0 left-1/2 transform -translate-x-1/2 py-4 px-6 rounded-md shadow-md`}
+          className={`fixed justify-center top-0 left-1/2 transform -translate-x-1/2 py-4 px-6 rounded-md shadow-md`}
         >
           {error}
         </Alert>
