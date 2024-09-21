@@ -3,10 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Input } from '@material-tailwind/react';
 import { useCookies } from 'react-cookie';
 import { jwtDecode } from 'jwt-decode';
+import { ACCOUNT_NOT_ACTIVATED_ERROR } from '../../constants';
 
 const apiUrl = "http://localhost:8080/api/v1";
 
-export const Login = ({showRegisterSuccess}) => {
+export const Login = () => {
   const location = useLocation();
   const success = location.state?.success;
 
@@ -20,6 +21,7 @@ export const Login = ({showRegisterSuccess}) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
 
     const response = await fetch(`${apiUrl}/users/auth`, {
       method: "POST",
@@ -34,7 +36,13 @@ export const Login = ({showRegisterSuccess}) => {
     console.log(data);
 
     if (!response.ok) {
-      setError(data.message);
+      if (response.status === 500) {
+        setError("There was some error.");
+        return;
+      }
+      if (data.errorCode === ACCOUNT_NOT_ACTIVATED_ERROR) {
+        setError("Your account hasn't been activated yet.");
+      }
       return;
     }
 
@@ -53,7 +61,7 @@ export const Login = ({showRegisterSuccess}) => {
       <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
           <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
               <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                  Login in to your account
+                  Login to your account
               </h1>
               <form class="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
                   <div>
@@ -83,8 +91,8 @@ export const Login = ({showRegisterSuccess}) => {
           </div>
       </div>
   </div>
-  { success && <Alert color="green" className={`fixed top-0 left-1/2 transform -translate-x-1/2 py-4 px-6 rounded-md shadow-md`}>Sign up successfully!</Alert>}
-  { error && <Alert color="red" className={`fixed top-0 left-1/2 transform -translate-x-1/2 py-4 px-6 rounded-md shadow-md`}>{error}</Alert>}
+  { success && <Alert color="green" className={`fixed justify-center top-0 left-1/2 transform -translate-x-1/2 py-4 px-6 rounded-md shadow-md`}>Sign up successfully!</Alert>}
+  { error && <Alert color="red" className={`fixed justify-center top-0 left-1/2 transform -translate-x-1/2 py-4 px-6 rounded-md shadow-md`}>{error}</Alert>}
 </section>
   );
 }
