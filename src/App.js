@@ -20,6 +20,7 @@ import Books from "./pages/Books";
 import Users from "./pages/Users";
 import Transactions from "./pages/Transactions";
 import ResetPassword from "./pages/LoginSignup/ResetPassword";
+import Activate from "./pages/LoginSignup/Activate";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/activate" element={<Activate />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<Forgot />} />
           <Route path="/reset-password" element={<ResetPassword />} />

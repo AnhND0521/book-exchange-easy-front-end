@@ -8,7 +8,7 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [key, setKey] = useState();
-  const [invalidKey, setInvalidKey] = useState(false);
+  const [invalidKey, setInvalidKey] = useState(true);
 
   const validateKey = async (key) => {
     const response = await fetch(
@@ -20,6 +20,8 @@ const ResetPassword = () => {
       setInvalidKey(true);
       return;
     }
+
+    setInvalidKey(false);
   };
 
   useEffect(() => {

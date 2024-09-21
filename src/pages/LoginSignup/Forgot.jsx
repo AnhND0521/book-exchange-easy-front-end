@@ -104,8 +104,7 @@ const Forgot = () => {
             {mailSent && (
               <div class="space-y-4 md:space-y-6">
                 <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  An email has been sent to you to instruct how to reset your
-                  password.
+                  An email has been sent to your email address. Please follow the instructions to reset your password.
                 </p>
 
                 <p class="text-sm font-light text-gray-500 dark:text-gray-400">
