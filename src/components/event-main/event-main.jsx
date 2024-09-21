@@ -14,29 +14,23 @@ export default function EventMain() {
         const data = await response.json();
         console.log(data);
         setEvents(data.content.slice(0, 5));
-      }
-      catch(err) {
+      } catch (err) {
         console.log(err);
       }
-    }
+    };
 
     fetchEvent();
   }, []);
 
-  const eventList = events.map((event) => 
-    <CarouselEvent
-      key={event.id}
-      event={event}
-    />
-  )
-
-  return (
+  return events.length > 0 ? (
     <div>
       <div className="h-80">
         <Carousel className="rounded-xl">
-          {eventList}
+          {events.map((event) => (
+            <CarouselEvent key={event.id} event={event} />
+          ))}
         </Carousel>
       </div>
     </div>
-  );
+  ) : <></>;
 }

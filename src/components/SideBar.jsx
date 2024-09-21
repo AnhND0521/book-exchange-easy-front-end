@@ -61,7 +61,7 @@ export function MySidebar() {
             <ListItemPrefix>
               <CalendarDaysIcon className="h-5 w-5" />
             </ListItemPrefix>
-            Events
+            Community
           </ListItem>
         </Link>
         <Link to="/interest">

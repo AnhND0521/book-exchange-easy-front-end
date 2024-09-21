@@ -37,23 +37,8 @@ export default function Events() {
   return (
     <>
       <WrapBar>
-        <div className=" w-full h-full grid grid-cols-9 ">
-          <div className=" col-span-6 flex flex-col items-center gap-4">
-            {
-              cookies['user'] &&
-              <Card className="w-2/3 min-w-96 flex flex-row items-center gap-2 py-3 px-5">
-                <div className=" flex items-center justify-center">
-                  <Avatar
-                    className=" h-10 w-10"
-                    src="https://docs.material-tailwind.com/img/face-2.jpg"
-                    alt="avatar"
-                  />
-                </div>
-                <div className=" w-full">
-                  <AddEventDiag />
-                </div>
-              </Card>
-            }
+        <div className="-ml-10 w-full h-full grid grid-cols-12 pr-16 ">
+          <div className=" col-span-8 flex flex-col items-center gap-4">
             {postList}
           </div>
           <EventList />

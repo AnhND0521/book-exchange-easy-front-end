@@ -17,11 +17,12 @@ export function AddPostDiag(props) {
   const { eventId } = props;
   const navigate = useNavigate();
 
-  const [cookies, setCookie, removeCookie] = useCookies(['cookie-name']);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [imagePath, setImagePath] = useState('');
+  const [cookies, setCookie, removeCookie] = useCookies(["cookie-name"]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [imagePath, setImagePath] = useState("");
   const [image, setImage] = useState();
+  const [loading, setLoading] = useState(false);
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
@@ -29,9 +30,10 @@ export function AddPostDiag(props) {
   const handleChange = (e) => {
     setImagePath(URL.createObjectURL(e.target.files[0]));
     setImage(e.target.files[0]);
-  }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch(`${environment.apiUrl}/posts`, {
         method: "POST",
@@ -39,7 +41,7 @@ export function AddPostDiag(props) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: cookies['user'].id,
+          userId: cookies["user"].id,
           title: title,
           content: content,
           eventId: eventId,
@@ -50,41 +52,49 @@ export function AddPostDiag(props) {
         const formData = new FormData();
         formData.append("imageFile", image);
 
-        const imageResponse = await fetch(`${environment.apiUrl}/posts/${data.id}/upload-image-post`, {
-          method: "POST",
-          body: formData,
-        });
+        const imageResponse = await fetch(
+          `${environment.apiUrl}/posts/${data.id}/upload-image-post`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
         if (imageResponse.ok) {
           const imageData = await imageResponse.json();
-          const response = await fetch(`http://localhost:8080/api/v1/posts/${data.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...data,
-              imagePath: imageData.message,
-            }),
-          })
+          const response = await fetch(
+            `http://localhost:8080/api/v1/posts/${data.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                ...data,
+                imagePath: imageData.message,
+              }),
+            }
+          );
           if (response.ok) {
             navigate(0);
           }
         }
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
-  }
-  
+  };
+
   return (
     <>
-      <Button onClick={handleOpen} className="w-full h-12 bg-blue-500 montserrat-font">
+      <Button
+        onClick={handleOpen}
+        className="w-full h-12 bg-blue-500 montserrat-font"
+      >
         <div className="flex justify-center items-center">
-          <PlusIcon className="h-5 w-5 mr-2"/>
-          <div className="font-black">
-            Add post
-          </div>
+          <PlusIcon className="h-5 w-5 mr-2" />
+          <div className="font-black">Add post</div>
         </div>
       </Button>
       <Dialog
@@ -101,7 +111,10 @@ export function AddPostDiag(props) {
               </Typography>
             </div>
             <div>
-              <button onClick={handleOpen} className=" flex justify-center items-center">
+              <button
+                onClick={handleOpen}
+                className=" flex justify-center items-center"
+              >
                 <XMarkIcon className="h-6 w-6 text-gray-500 duration-300 hover:text-red-300" />
               </button>
             </div>
@@ -111,11 +124,21 @@ export function AddPostDiag(props) {
               <Typography className="mb-2" variant="h6">
                 Title
               </Typography>
-              <Input label="Title" size="lg" required value={title} onChange={e => setTitle(e.target.value)} />
+              <Input
+                label="Title"
+                size="lg"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
               <Typography className="mb-2" variant="h6">
                 Content
               </Typography>
-              <Textarea label="Content" value={content} onChange={e => setContent(e.target.value)} />
+              <Textarea
+                label="Content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
               <Typography className="mb-2" variant="h6">
                 Image
               </Typography>
@@ -128,7 +151,14 @@ export function AddPostDiag(props) {
                 onChange={handleChange}
               />
               <img src={imagePath} className="w-full mb-2" />
-              <Button variant="gradient" color="blue" type="submit">
+              <Button
+                variant="gradient"
+                color="blue"
+                type="submit"
+                className="w-full justify-center"
+                loading={loading}
+                disabled={loading}
+              >
                 Post
               </Button>
             </form>

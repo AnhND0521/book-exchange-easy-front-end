@@ -4,7 +4,7 @@ import './calendar.css'
 export default function EventCalendar(props) {
   const { activeDate, setActiveDate } = props;
   return (
-    <div>
+    <div className="w-full">
       <Calendar
         className="w-full bg-white text-center nunito-font px-5 pt-3 pb-5  rounded-xl shadow-md"
         tileClassName={({ date, view }) => {

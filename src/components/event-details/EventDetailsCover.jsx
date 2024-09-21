@@ -54,7 +54,7 @@ const EventDetailsCover = (props) => {
   }
 
   return (
-    <div className=" relative -top-5 h-72 w-full col-span-8 col-start-2 pr-4 overflow-hidden">
+    <div className=" relative -top-5 h-72 w-full col-span-11 col-start-2 pr-4 overflow-hidden">
       <Card className=" w-full h-full flex flex-col rounded-md">
         <img
           src={event.imagePath}

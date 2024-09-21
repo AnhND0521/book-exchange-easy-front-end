@@ -29,6 +29,7 @@ export function AddEventDiag() {
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
+  const [loading, setLoading] = useState(false);
 
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -66,6 +67,7 @@ export function AddEventDiag() {
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const start = `${startDate}T${startTime}:00.000Z`;
     const end = `${endDate}T${endTime}:00.000Z`;
 
@@ -84,6 +86,7 @@ export function AddEventDiag() {
           concernedUserIds: []
         }),
       });
+      setLoading(false);
       if (response.ok) {
         const data = await response.json();
         const formData = new FormData();
@@ -113,6 +116,7 @@ export function AddEventDiag() {
     }
     catch (err) {
       console.log(err);
+      setLoading(false);
     }
   }
 
@@ -163,6 +167,7 @@ export function AddEventDiag() {
                     className=" h-full w-full p-2.5 border border-[#b0bec5] rounded-md font-roboto text-sm"
                     value={startDate} 
                     onChange={(e) => setStartDate(e.target.value)}
+                    required
                   />
                 </div>
                 <div className=" h-full w-full">
@@ -176,6 +181,7 @@ export function AddEventDiag() {
                     className=" h-full w-full p-2.5 border border-[#b0bec5] rounded-md font-roboto text-sm"
                     value={startTime} 
                     onChange={(e) => setStartTime(e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -191,6 +197,7 @@ export function AddEventDiag() {
                     className=" h-full w-full p-2.5 border border-[#b0bec5] rounded-md font-roboto text-sm"
                     value={endDate} 
                     onChange={(e) => setEndDate(e.target.value)}
+                    required
                   />
                 </div>
                 <div className=" h-full w-full">
@@ -204,6 +211,7 @@ export function AddEventDiag() {
                     className=" h-full w-full p-2.5 border border-[#b0bec5] rounded-md font-roboto text-sm"
                     value={endTime} 
                     onChange={(e) => setEndTime(e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -221,9 +229,10 @@ export function AddEventDiag() {
                 accept="image/png, image/jpeg"
                 className=" flex justify-center items-center"
                 onChange={handleChange}
+                required
               />
               <img src={imagePath} className="w-full mb-2" />
-              <Button variant="gradient" color="blue" type="submit">
+              <Button variant="gradient" color="blue" type="submit" className="w-full justify-center" loading={loading} disabled={loading} >
                 Create event
               </Button>
             </form>

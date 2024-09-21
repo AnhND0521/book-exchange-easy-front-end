@@ -73,13 +73,13 @@ export default function Post(props) {
   }
 
   return (
-    <div className=" w-2/3">
+    <div className=" w-3/4">
       <Card className="w-full min-w-96 min-h-96 ">
         <div className=" py-3 px-5 flex gap-2">
           <div className=" flex items-center justify-center">
             <Avatar
               className=" h-10 w-10"
-              src="https://docs.material-tailwind.com/img/face-2.jpg"
+              src={cookies["user"].pictureUrl}
               alt="avatar"
             />
           </div>
