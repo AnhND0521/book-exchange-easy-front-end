@@ -171,7 +171,7 @@ export const Signup = () => {
 
     if (!response.ok) {
       if (response.status === 500) {
-        setError("There was some error.");
+        setError("There were some errors.");
         return;
       }
       setError(data.message);

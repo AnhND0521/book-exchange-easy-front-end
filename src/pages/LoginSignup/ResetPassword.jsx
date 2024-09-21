@@ -3,6 +3,7 @@ import { useCookies } from "react-cookie";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import environment from "../../environment";
 import { Button, Typography } from "@material-tailwind/react";
+import { KEY_NOT_VALID_ERROR } from "../../constants";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -78,7 +79,11 @@ const ResetPassword = () => {
     setLoading(false);
 
     if (!response.ok) {
-      setError(data.message);
+      if (data.errorCode === KEY_NOT_VALID_ERROR) {
+        setError("Sorry, your reset password period has expired.");
+        return;
+      }
+      setError("There were some errors.");
       return;
     }
 
