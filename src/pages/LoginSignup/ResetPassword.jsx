@@ -9,12 +9,26 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [key, setKey] = useState();
+  const [invalidKey, setInvalidKey] = useState(false);
+
+  const validateKey = async (key) => {
+    const response = await fetch(
+      `${environment.apiUrl}/users/validate-key?key=${key}`
+    );
+    const data = await response.json();
+
+    if (!data.isValid) {
+      setInvalidKey(true);
+      return;
+    }
+  };
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     let keyParam = queryParams.get("key");
     if (!keyParam) navigate("/404");
     setKey(keyParam);
+    validateKey(keyParam);
   }, []);
 
   const [password, setPassword] = useState("");
@@ -78,103 +92,124 @@ const ResetPassword = () => {
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Reset password
             </h1>
-            {!done && (
-              <form
-                class="space-y-4 md:space-y-6"
-                action="#"
-                onSubmit={handleSubmit}
-              >
-                <div>
-                  <label
-                    for="password"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            {!invalidKey && (
+              <>
+                {!done && (
+                  <form
+                    class="space-y-4 md:space-y-6"
+                    action="#"
+                    onSubmit={handleSubmit}
                   >
-                    New password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    placeholder="••••••••"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    required
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      validate(e.target.value, confirmPassword);
-                    }}
-                  />
-                  {!passwordValid && (
-                    <Typography
-                      variant="small"
-                      color="red"
-                      className="mt-2 flex items-center gap-1 font-normal"
+                    <div>
+                      <label
+                        for="password"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        New password
+                      </label>
+                      <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        placeholder="••••••••"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        required
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          validate(e.target.value, confirmPassword);
+                        }}
+                      />
+                      {!passwordValid && (
+                        <Typography
+                          variant="small"
+                          color="red"
+                          className="mt-2 flex items-center gap-1 font-normal"
+                        >
+                          Your password should have at least 8 characters!
+                        </Typography>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
+                        for="confirm-password"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        Re-enter password
+                      </label>
+                      <input
+                        type="password"
+                        name="confirm-password"
+                        id="confirm-password"
+                        placeholder="••••••••"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          validate(password, e.target.value);
+                        }}
+                      />
+                      {!confirmPasswordMatches && (
+                        <Typography
+                          variant="small"
+                          color="red"
+                          className="mt-2 flex items-center gap-1 font-normal"
+                        >
+                          Password and confirm password do not match!
+                        </Typography>
+                      )}
+                    </div>
+
+                    <Button
+                      type="submit"
+                      color="blue"
+                      loading={loading}
+                      className="w-full justify-center"
                     >
-                      Your password should have at least 8 characters!
-                    </Typography>
-                  )}
-                </div>
+                      Confirm
+                    </Button>
 
-                <div>
-                  <label
-                    for="confirm-password"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Re-enter password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirm-password"
-                    id="confirm-password"
-                    placeholder="••••••••"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      validate(password, e.target.value);
-                    }}
-                  />
-                  {!confirmPasswordMatches && (
-                    <Typography
-                      variant="small"
-                      color="red"
-                      className="mt-2 flex items-center gap-1 font-normal"
-                    >
-                      Password and confirm password do not match!
-                    </Typography>
-                  )}
-                </div>
+                    {error && (
+                      <p className="text-red-800 bg-red-50 text-center px-4 py-2 rounded-md">
+                        {error}
+                      </p>
+                    )}
 
-                <Button
-                  type="submit"
-                  color="blue"
-                  loading={loading}
-                  className="w-full justify-center"
-                >
-                  Confirm
-                </Button>
-
-                {error && (
-                  <p className="text-red-800 bg-red-50 text-center px-4 py-2 rounded-md">
-                    {error}
-                  </p>
+                    <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                      <Link
+                        to="/login"
+                        class="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                      >
+                        Back to login
+                      </Link>
+                    </p>
+                  </form>
                 )}
+                {done && (
+                  <div class="space-y-4 md:space-y-6">
+                    <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                      Your password has been reset successfully!
+                    </p>
 
-                <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                  <Link
-                    to="/login"
-                    class="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                  >
-                    Back to login
-                  </Link>
-                </p>
-              </form>
+                    <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                      <Link
+                        to="/login"
+                        class="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                      >
+                        Back to login
+                      </Link>
+                    </p>
+                  </div>
+                )}
+              </>
             )}
-            {done && (
+            {invalidKey && (
               <div class="space-y-4 md:space-y-6">
                 <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  Your password has been reset successfully!
+                  Sorry, your request to reset password is either invalid or
+                  expired.
                 </p>
 
                 <p class="text-sm font-light text-gray-500 dark:text-gray-400">
