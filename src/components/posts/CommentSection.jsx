@@ -26,11 +26,13 @@ import { useEffect, useState } from "react";
 import environment from "../../environment";
 import CommentDeleteDialog from "./CommentDeleteDialog";
 import CommentEditDialog from "./CommentEditDialog";
+import CommentReplies from "./CommentReplies";
 
 const CommentSection = ({ postId }) => {
   const [cookies, setCookie] = useCookies(["cookie-name"]);
 
   const [comments, setComments] = useState([]);
+  const [showReplies, setShowReplies] = useState([]);
 
   const fetchCommentList = async () => {
     const response = await fetch(
@@ -72,10 +74,18 @@ const CommentSection = ({ postId }) => {
     fetchCommentList();
   };
 
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
-  const handleOpenEdit = () => setOpenEdit((cur) => !cur);
-  const handleOpenDelete = () => setOpenDelete((cur) => !cur);
+  const [openEdit, setOpenEdit] = useState([]);
+  const [openDelete, setOpenDelete] = useState([]);
+  const handleOpenEdit = (i) => {
+    if (!openEdit.includes(i)) openEdit.push(i);
+    else openEdit.splice(openEdit.indexOf(i), 1);
+    setOpenEdit([...openEdit]);
+  };
+  const handleOpenDelete = (i) => {
+    if (!openDelete.includes(i)) openDelete.push(i);
+    else openDelete.splice(openDelete.indexOf(i), 1);
+    setOpenDelete([...openDelete]);
+  };
 
   const likeComment = async (i) => {
     const response = await fetch(
@@ -112,7 +122,9 @@ const CommentSection = ({ postId }) => {
     const data = await response.json();
     if (response.ok) {
       comments[i].likes -= 1;
-      comments[i].likedUserIds = comments[i].likedUserIds.filter(userId => userId !== cookies["user"].id);
+      comments[i].likedUserIds = comments[i].likedUserIds.filter(
+        (userId) => userId !== cookies["user"].id
+      );
       setComments([...comments]);
     } else {
       console.log(response.message);
@@ -160,7 +172,7 @@ const CommentSection = ({ postId }) => {
       )}
       <div className="flex flex-col gap-3 items-start w-full">
         {comments.map((comment, i) => (
-          <div className="flex flex-col gap-1 items-start w-full">
+          <div key={i} className="flex flex-col gap-1 items-start w-full">
             <div className="flex justify-between gap-3 w-full mb-1">
               <Avatar
                 className=" h-10 w-10 "
@@ -194,14 +206,14 @@ const CommentSection = ({ postId }) => {
                           <MenuList>
                             <MenuItem
                               className="flex items-center gap-1"
-                              onClick={handleOpenEdit}
+                              onClick={() => handleOpenEdit(i)}
                             >
                               <PencilIcon className="w-4" />
                               Edit
                             </MenuItem>
                             <MenuItem
                               className="flex items-center gap-1 text-red-500"
-                              onClick={handleOpenDelete}
+                              onClick={() => handleOpenDelete(i)}
                             >
                               <TrashIcon className="w-4" />
                               Delete
@@ -210,15 +222,15 @@ const CommentSection = ({ postId }) => {
                         </Menu>
 
                         <CommentEditDialog
-                          open={openEdit}
-                          handleOpen={handleOpenEdit}
+                          open={openEdit.includes(i)}
+                          handleOpen={() => handleOpenEdit(i)}
                           comment={comment}
                           loadComments={fetchCommentList}
                         />
 
                         <CommentDeleteDialog
-                          open={openDelete}
-                          handleOpen={handleOpenDelete}
+                          open={openDelete.includes(i)}
+                          handleOpen={() => handleOpenDelete(i)}
                           commentId={comment.id}
                           loadComments={fetchCommentList}
                         />
@@ -232,7 +244,7 @@ const CommentSection = ({ postId }) => {
             <div className="ml-[54px] h-5 flex justify-start items-center gap-3 text-sm">
               <div className=" pl-2 flex">
                 <div className=" flex">
-                  {comment.likedUserIds.filter(userId => userId === cookies["user"].id).length === 0 ? (
+                  {!comment.likedUserIds.includes(cookies["user"].id) ? (
                     <div
                       className=" flex justify-center items-center mr-1"
                       onClick={() => likeComment(i)}
@@ -256,7 +268,15 @@ const CommentSection = ({ postId }) => {
                 <div className="flex">
                   <div
                     className=" flex justify-center items-center mr-1"
-                    onClick={null}
+                    onClick={() => {
+                      if (!showReplies.includes(comment.id)) {
+                        setShowReplies([...showReplies, comment.id]);
+                      } else {
+                        setShowReplies(
+                          showReplies.filter((id) => id !== comment.id)
+                        );
+                      }
+                    }}
                   >
                     <ArrowUturnLeftIcon className=" h-5 w-5 duration-200 hover:scale-125 active:scale-95 cursor-pointer" />
                   </div>
@@ -266,6 +286,9 @@ const CommentSection = ({ postId }) => {
                 </div>
               </div>
             </div>
+            {showReplies.includes(comment.id) && (
+              <CommentReplies commentId={comment.id} />
+            )}
           </div>
         ))}
       </div>
