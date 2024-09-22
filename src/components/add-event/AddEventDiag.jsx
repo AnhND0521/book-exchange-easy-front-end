@@ -215,10 +215,10 @@ export function AddEventDiag() {
                   />
                 </div>
               </div>
-              <Typography className="mb-2" variant="h6" value={description} onChange={(e) => setDescription(e.target.value)}>
+              <Typography className="mb-2" variant="h6">
                 Description
               </Typography>
-              <Textarea label="Description" />
+              <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
               <Typography className="mb-2" variant="h6">
                 Cover image
               </Typography>

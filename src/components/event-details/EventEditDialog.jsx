@@ -19,11 +19,23 @@ const EventEditDialog = (props) => {
   const [startTime, setStartTime] = useState(moment(start).format('hh:mm'));
   const [endDate, setEndDate] = useState(moment(end).format('YYYY-MM-DD'));
   const [endTime, setEndTime] = useState(moment(end).format('hh:mm'));
+  console.log(event)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const start = `${startDate}T${startTime}:00.000Z`;
     const end = `${endDate}T${endTime}:00.000Z`;
+
+    const body = {
+      id: event.id,
+      ownerId: cookies['user'].id,
+      name: name,
+      description: description,
+      startTime: start,
+      endTime: end,
+      imagePath: event.imagePath
+    }
+    console.log(body);
 
     try {
       const response = await fetch(`http://localhost:8080/api/v1/events/${event.id}`, {
@@ -31,15 +43,7 @@ const EventEditDialog = (props) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: event.id,
-          ownerId: cookies['user'].id,
-          name: name,
-          description: description,
-          startTime: start,
-          endTime: end,
-          concernedUserIds: []
-        }),
+        body: JSON.stringify(body),
       })
       if (response.ok) {
         const data = await response.json();
