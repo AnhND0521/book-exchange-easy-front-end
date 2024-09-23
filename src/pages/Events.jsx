@@ -11,22 +11,30 @@ export default function Events() {
   const [posts, setPosts] = useState([]);
   const [cookies, setCookie, removeCookie] = useCookies(['cookie-name']);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch(`${environment.apiUrl}/posts/latest`)
-        if (response.ok) {
-          const data = await response.json();
-          setPosts(data.content);
-        }
-      }
-      catch (err) {
-        console.log(err);
+  const [page, setPage] = useState(0);
+  const size = 5;
+
+  const fetchPosts = async (page) => {
+    try {
+      const response = await fetch(`${environment.apiUrl}/posts/latest?page=${page}&size=${size}`)
+      if (response.ok) {
+        const data = await response.json();
+        setPosts([...posts, ...data.content]);
       }
     }
+    catch (err) {
+      console.log(err);
+    }
+  }
 
-    fetchPosts();
+  useEffect(() => {
+    fetchPosts(0);
   }, []);
+
+  const loadMore = () => {
+    setPage(page+1);
+    fetchPosts(page+1);
+  }
 
   const postList = posts.map((post) => 
     <Post 
@@ -40,6 +48,7 @@ export default function Events() {
         <div className="-ml-10 w-full h-full grid grid-cols-12 pr-16 ">
           <div className=" col-span-8 flex flex-col items-center gap-4">
             {postList}
+            <a className="mb-5 cursor-pointer" onClick={loadMore}>Load more posts</a>
           </div>
           <EventList />
         </div>

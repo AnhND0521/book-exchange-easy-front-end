@@ -14,51 +14,66 @@ const EventList = () => {
   const [activeDate, setActiveDate] = useState(today);
   const [filter, setFilter] = useState(1);
   const [events, setEvents] = useState([]);
+  const [page, setPage] = useState(0);
+  const size = 3;
 
-  useEffect(() => {
+  const fetchEvent = async (filter, page) => {
     let url;
     if (filter == 1) {
-      url = `${environment.apiUrl}/events/latest`;
+      url = `${environment.apiUrl}/events/latest?page=${page}&size=${size}`;
     } else if (filter == 2) {
-      url = `${environment.apiUrl}/events/filter-event-that-user-concern?id=${cookies["user"].id}`;
+      url = `${environment.apiUrl}/events/filter-event-that-user-concern?id=${cookies["user"].id}&page=${page}&size=${size}`;
     } else {
-      url = `${environment.apiUrl}/events/find-by-owner?id=${cookies["user"].id}`;
+      url = `${environment.apiUrl}/events/find-by-owner?id=${cookies["user"].id}&page=${page}&size=${size}`;
     }
-    const fetchEvent = async () => {
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        setEvents(data.content);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchEvent();
-  }, [filter]);
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      setEvents([...events, ...data.content]);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      const date = activeDate.toLocaleDateString("en-CA", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-      console.log(date);
-      try {
-        const response = await fetch(
-          `${environment.apiUrl}/events/event-by-date?from=${date}&to=${date}`
-        );
-        const data = await response.json();
-        console.log(data);
-        setEvents(data.content);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+    fetchEvent(1, 0);
+  }, [filter]);
 
-    fetchEvent();
-  }, [activeDate]);
+  // useEffect(() => {
+  //   const fetchEvent = async () => {
+  //     const date = activeDate.toLocaleDateString("en-CA", {
+  //       year: "numeric",
+  //       month: "2-digit",
+  //       day: "2-digit",
+  //     });
+  //     console.log(date);
+  //     try {
+  //       const response = await fetch(
+  //         `${environment.apiUrl}/events/event-by-date?from=${date}&to=${date}`
+  //       );
+  //       const data = await response.json();
+  //       console.log(data);
+  //       setEvents(data.content);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+
+  //   fetchEvent();
+  // }, [activeDate]);
+
+  const loadMore = () => {
+    setPage(page + 1);
+    fetchEvent(filter, page + 1);
+  };
+
+  const changeFilter = (i) => {
+    if (i != filter) {
+      setFilter(i);
+      setPage(0);
+      fetchEvent(i, 0);
+    }
+  };
 
   const eventList = events.map((event) => (
     <EventListEvent key={event.id} event={event} />
@@ -116,10 +131,19 @@ const EventList = () => {
         </Button>
       </div>
       <div className=" w-[396px]">
-          {eventList.length === 0 && (
-            <p><i>No events found.</i></p>
-          )}
-        <div className="  min-w-[396px] flex flex-col">{eventList}</div>
+        {eventList.length === 0 && (
+          <p>
+            <i>No events found.</i>
+          </p>
+        )}{" "}
+        {eventList.length > 0 && (
+          <>
+            <div className="  min-w-[396px] flex flex-col">{eventList}</div>
+            <a className="mb-5 cursor-pointer" onClick={loadMore}>
+              Load more events
+            </a>
+          </>
+        )}
       </div>
     </div>
   );
