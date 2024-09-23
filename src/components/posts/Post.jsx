@@ -11,6 +11,7 @@ import environment from "../../environment";
 import { getTimeAgo } from "../../utils/getDateShit";
 import { Link } from "react-router-dom";
 import CommentSection from "./CommentSection";
+import ChatMain from "../chat/ChatMain";
 
 export default function Post(props) {
   const { post } = props;
@@ -19,6 +20,8 @@ export default function Post(props) {
   const [likes, setLikes] = useState(post.likedUserIds.length);
   const [liked, setLiked] = useState(post.likedUserIds.includes(thisUser?.id));
   const [showComment, setShowComment] = useState(false);
+  const [openChat, setOpenChat] = useState(false);
+  const [chatPartnerId, setChatPartnerId] = useState(0);
 
   const likePost = async () => {
     const response = await fetch(`${environment.apiUrl}/posts/${post.id}`, {
@@ -55,6 +58,11 @@ export default function Post(props) {
       setLikes(likes - 1);
     }
   };
+
+  const handleChat = (partnerId) => {
+    setChatPartnerId(partnerId);
+    setOpenChat(true);
+  } 
 
   return (
     <div className=" w-3/4">
@@ -138,18 +146,23 @@ export default function Post(props) {
             </div>
           </div>
           <div className=" pr-2">
-          <div
-                className=" flex justify-center items-center mr-1"
-                onClick={likePost}
-              >
-                <ChatBubbleOvalLeftIcon className=" h-5 w-5 duration-200 hover:scale-125 active:scale-95 cursor-pointer" />
-              </div>
+            <div
+              className=" flex justify-center items-center mr-1"
+              onClick={() => handleChat(post.userId)}
+            >
+              <ChatBubbleOvalLeftIcon className=" h-5 w-5 duration-200 hover:scale-125 active:scale-95 cursor-pointer" />
+            </div>
           </div>
         </div>
-        {showComment && (
-          <CommentSection postId={post.id} />
-        )}
+        {showComment && <CommentSection postId={post.id} />}
       </Card>
+      {openChat && (
+        <ChatMain
+          open={openChat}
+          handleClose={() => setOpenChat(false)}
+          partnerId={chatPartnerId}
+        />
+      )}
     </div>
   );
 }

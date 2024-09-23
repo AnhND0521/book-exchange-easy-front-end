@@ -138,7 +138,7 @@ export default function ChatMain(props) {
     <>
       {open ? (
         <div>
-          <div className=" fixed bottom-0 h-[500px] w-96 right-16">
+          <div className=" fixed bottom-0 h-[500px] w-96 right-16 z-[9999]">
             <Card className="h-full w-full pt-1 shadow-lg shadow-blue-300 ">
               <div className=" h-14 border-b-2 border-b-blue-300/30 p-2 flex flex-row items-center drop-shadow-md ">
                 <div className=" w-5/6 pl-3 font-black text-lg flex items-center gap-4">
