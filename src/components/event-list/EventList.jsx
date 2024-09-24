@@ -71,6 +71,7 @@ const EventList = () => {
     if (i != filter) {
       setFilter(i);
       setPage(0);
+      setEvents([]);
       fetchEvent(i, 0);
     }
   };
@@ -105,7 +106,7 @@ const EventList = () => {
               ? "mr-2 bg-white text-blue-500 shadow-none"
               : " mr-2 bg-blue-500"
           }
-          onClick={() => setFilter(1)}
+          onClick={() => changeFilter(1)}
         >
           All
         </Button>
@@ -115,7 +116,7 @@ const EventList = () => {
               ? "mr-2 bg-white text-blue-500 shadow-none"
               : " mr-2 bg-blue-500"
           }
-          onClick={() => setFilter(2)}
+          onClick={() => changeFilter(2)}
         >
           Interested
         </Button>
@@ -125,7 +126,7 @@ const EventList = () => {
               ? "mr-2 bg-white text-blue-500 shadow-none"
               : " mr-2 bg-blue-500"
           }
-          onClick={() => setFilter(3)}
+          onClick={() => changeFilter(3)}
         >
           My events
         </Button>

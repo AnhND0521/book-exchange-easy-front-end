@@ -22,6 +22,8 @@ export default function Post(props) {
   const [showComment, setShowComment] = useState(false);
   const [openChat, setOpenChat] = useState(false);
   const [chatPartnerId, setChatPartnerId] = useState(0);
+  const [showMore, setShowMore] = useState(false);
+  const maxLength = 200;
 
   const likePost = async () => {
     const response = await fetch(`${environment.apiUrl}/posts/${post.id}`, {
@@ -62,7 +64,7 @@ export default function Post(props) {
   const handleChat = (partnerId) => {
     setChatPartnerId(partnerId);
     setOpenChat(true);
-  } 
+  };
 
   return (
     <div className=" w-3/4">
@@ -100,7 +102,29 @@ export default function Post(props) {
           {post.title}
         </div>
         <div className=" w-full px-5 text-sm text-pretty mb-3 ">
-          {post.content}
+          {post.content.length <= maxLength ? (
+            post.content
+          ) : !showMore ? (
+            <>
+              {post.content.substring(0, maxLength) + "..."}
+              <a
+                className="ml-3 cursor-pointer text-blue-600"
+                onClick={() => setShowMore(true)}
+              >
+                Show more
+              </a>
+            </>
+          ) : (
+            <>
+              {post.content}
+              <a
+                className="ml-3 cursor-pointer text-blue-600"
+                onClick={() => setShowMore(false)}
+              >
+                Show less
+              </a>
+            </>
+          )}
         </div>
         <div className=" h-96 w-full px-5 mb-5">
           <img
